@@ -6,6 +6,10 @@
   "author": "Luc <luc@ltv.vn>",
   "license": "MIT",
   "private": true,
+  "scripts": {
+    "start": "node index.js",
+    "serve": "node index.js"
+  },
   "resolutions": {
     "graphql": "^14.0.2"
   },
