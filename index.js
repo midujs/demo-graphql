@@ -17,26 +17,40 @@ const pgConfig = new Pool({
 
 const startServer = async () => {
   const forumSchema = await graphile.createPGQLSchema(pgConfig, ['forum_example']);
+  const schemas = [mySchema.schema, forumSchema];
 
   const schema = mergeSchemas({
-    schemas: [mySchema.schema, forumSchema],
+    schemas,
     resolvers: [mySchema.resolver, {}],
   });
 
   const app = express();
 
-  app.use(bodyParser.json());
+  Object.keys(
+    forumSchema //
+      .getQueryType()
+      .getFields(),
+  ) //
+    .map(field => {
+      const r = forumSchema.getQueryType().getFields()[field].resolve;
+      schema.getQueryType().getFields()[field].resolve = r;
+    });
 
-  app.post('/graphql', middlewares.debugQuery);
+  app.use(bodyParser.json());
 
   app.post(
     '/graphql',
     // Define how to resolve query
     // Fallback to "expressGraphQL"
-    // TODO: dynamic check
-    middlewares.proxy(async (query, name) => {
-      const forumCase = ['allPeople', 'allPosts'].includes(name);
-      return forumCase && graphile.performQuery(pgConfig)(forumSchema, query);
+    middlewares.proxy((query, name) => {
+      const matched = schemas
+        .map(schema => {
+          const field = schema.getQueryType().getFields()[name];
+          const hasResolve = field && field.resolve;
+          return hasResolve && schema;
+        })
+        .filter(Boolean)[0];
+      return matched && graphile.performQuery(pgConfig)(matched, query);
     }),
   );
 
