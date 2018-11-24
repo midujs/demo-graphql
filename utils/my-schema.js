@@ -1,5 +1,5 @@
-const { buildSchema } = require("graphql");
-const { coursesData } = require("./../data");
+const { buildSchema } = require('graphql');
+const { coursesData } = require('./../data');
 
 const schema = buildSchema(`
   type Query {
@@ -31,14 +31,17 @@ const getCourses = args => {
 
 const resolver = {
   Query: {
-    message: () => "Hello World!",
+    message: (obj, args, context, info) => {
+      console.log('Hello World!');
+      return 'Hello World!';
+    },
     course: getCourse,
-    courses: getCourses
+    courses: getCourses,
   },
-  Mutation: {}
+  Mutation: {},
 };
 
 module.exports = {
   schema,
-  resolver
+  resolver,
 };

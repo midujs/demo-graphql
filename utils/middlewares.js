@@ -4,7 +4,7 @@ const gql = require('graphql-tag');
 const debugQuery = (req, _, next) => {
   const devEnv = process.env.NODE_ENV === 'development';
   const query = req.body.query;
-  devEnv && query && log('[query]', query);
+  true && query && log('[query]', query);
 
   next();
 };

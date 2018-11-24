@@ -3,6 +3,7 @@ const expressGraphQL = require('express-graphql');
 const bodyParser = require('body-parser');
 const { mergeSchemas } = require('graphql-tools');
 const { Pool } = require('pg');
+const { postgraphile } = require('postgraphile');
 
 const { DB_HOST, DB_NAME, DB_PASS, DB_PORT, DB_USER } = require('./dbconfig');
 const { graphile, mySchema, middlewares } = require('./utils');
@@ -17,6 +18,7 @@ const pgConfig = new Pool({
 
 const startServer = async () => {
   const forumSchema = await graphile.createPGQLSchema(pgConfig, ['forum_example']);
+  const forumMw = postgraphile(pgConfig, 'forum_example');
 
   const schema = mergeSchemas({
     schemas: [mySchema.schema, forumSchema],
@@ -28,18 +30,7 @@ const startServer = async () => {
   app.use(bodyParser.json());
 
   app.post('/graphql', middlewares.debugQuery);
-
-  app.post(
-    '/graphql',
-    // Define how to resolve query
-    // Fallback to "expressGraphQL"
-    // TODO: dynamic check
-    middlewares.proxy(async (query, name) => {
-      const forumCase = ['allPeople', 'allPosts'].includes(name);
-      return forumCase && graphile.performQuery(pgConfig)(forumSchema, query);
-    }),
-  );
-
+  app.post('/graphql', forumMw);
   app.use('/graphql', expressGraphQL({ schema, graphiql: true }));
 
   app.listen(8080, () => console.log('Express with GraphQL Server now is running on http://localhost:8080/graphql'));

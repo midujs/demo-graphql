@@ -9,4 +9,5 @@ const performQuery = pgPool => async (schema, query, variables, operationName) =
 module.exports = {
   performQuery,
   createPGQLSchema: createPostGraphQLSchema,
+  withPostGraphileContext,
 };
