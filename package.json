@@ -1,0 +1,20 @@
+{
+  "name": "demo-graphql",
+  "version": "0.1.0",
+  "description": "Demo Graphql",
+  "main": "index.js",
+  "author": "Luc <luc@ltv.vn>",
+  "license": "MIT",
+  "private": true,
+  "resolutions": {
+    "graphql": "^14.0.2"
+  },
+  "dependencies": {
+    "express": "^4.16.4",
+    "express-graphql": "^0.7.1",
+    "graphql": "^14.0.2",
+    "graphql-tools": "^4.0.3",
+    "pg": "^7.6.1",
+    "postgraphile": "^4.0.1"
+  }
+}
