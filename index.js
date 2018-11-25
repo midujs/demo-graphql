@@ -3,6 +3,7 @@ const expressGraphQL = require('express-graphql');
 const bodyParser = require('body-parser');
 const { mergeSchemas } = require('graphql-tools');
 const { Pool } = require('pg');
+const { postgraphile } = require('postgraphile');
 
 const { DB_HOST, DB_NAME, DB_PASS, DB_PORT, DB_USER } = require('./dbconfig');
 const { graphile, mySchema, middlewares } = require('./utils');
@@ -18,6 +19,7 @@ const pgConfig = new Pool({
 const startServer = async () => {
   const forumSchema = await graphile.createPGQLSchema(pgConfig, ['forum_example']);
   const schemas = [mySchema.schema, forumSchema];
+  const context = await new Promise(resolve => graphile.withPostGraphileContext({ pgPool: pgConfig }, resolve));
 
   const schema = mergeSchemas({
     schemas,
@@ -38,6 +40,9 @@ const startServer = async () => {
 
   app.use(bodyParser.json());
 
+  // @case: Using middleware from "graphile"
+  // app.post('/graphql', postgraphile(pgConfig, ['forum_example']));
+
   app.post(
     '/graphql',
     // Define how to resolve query
@@ -55,6 +60,9 @@ const startServer = async () => {
   );
 
   app.use('/graphql', expressGraphQL({ schema, graphiql: true }));
+
+  // @case: "mergeSchemas" has problems, using "context" sucess on "forumSchema"
+  // app.use('/graphql', expressGraphQL({ schema: forumSchema, graphiql: true, context }));
 
   app.listen(8080, () => console.log('Express with GraphQL Server now is running on http://localhost:8080/graphql'));
 };
